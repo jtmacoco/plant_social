@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 
 import { ThemedText } from '@/components/themed-text';
@@ -7,26 +7,27 @@ import PlantCamera from '@/components/PlantCamera';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { uploadImage } from '@/lib/api';
+import { uploadImage, PlantTip } from '@/lib/api';
 
 export default function HomeScreen() {
   const [showCamera, setShowCamera] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [tips, setTips] = useState<PlantTip[]>([]);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
   const handlePhotoTaken = async (uri: string) => {
+    setShowCamera(false);
+    setLoading(true);
     try {
       const result = await uploadImage(uri);
       console.log('Upload response:', result);
-      Alert.alert(
-        'Success!', 
-        `Image uploaded!\nID: ${result.id}\nType: ${result.content_type}`
-      );
+      setTips(result.tips);
     } catch (error) {
       console.error('Upload error:', error);
-      Alert.alert('Error', `Failed to upload image: ${error}`);
+      Alert.alert('Error', `Failed to get plant tips: ${error}`);
     } finally {
-      setShowCamera(false);
+      setLoading(false);
     }
   };
 
@@ -73,6 +74,53 @@ export default function HomeScreen() {
           <IconSymbol name="chevron.right" size={24} color="rgba(255,255,255,0.7)" />
         </View>
       </TouchableOpacity>
+
+      {/* Loading State */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <ThemedText style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Analyzing your plant...
+          </ThemedText>
+        </View>
+      )}
+
+      {/* Plant Tips Results */}
+      {tips.length > 0 && !loading && (
+        <>
+          <View style={styles.sectionHeader}>
+            <View style={styles.tipsHeaderRow}>
+              <ThemedText style={styles.sectionTitle}>Care Tips for Your Plant</ThemedText>
+              <TouchableOpacity onPress={() => setTips([])}>
+                <ThemedText style={[styles.clearButton, { color: colors.accent }]}>Clear</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+          {tips.map((tip, index) => (
+            <View
+              key={tip.id}
+              style={[styles.tipResultCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+            >
+              <View style={styles.tipResultHeader}>
+                <View style={[styles.tipResultBadge, { backgroundColor: colors.accentLight }]}>
+                  <ThemedText style={[styles.tipResultRank, { color: colors.accent }]}>
+                    #{index + 1}
+                  </ThemedText>
+                </View>
+                <View style={styles.tipResultTitleContainer}>
+                  <ThemedText style={styles.tipResultTitle}>{tip.title}</ThemedText>
+                  <ThemedText style={[styles.tipResultCategory, { color: colors.textSecondary }]}>
+                    {tip.category} • {Math.round(tip.score * 100)}% match
+                  </ThemedText>
+                </View>
+              </View>
+              <ThemedText style={[styles.tipResultText, { color: colors.textSecondary }]}>
+                {tip.text}
+              </ThemedText>
+            </View>
+          ))}
+        </>
+      )}
 
       {/* Quick Actions */}
       <View style={styles.sectionHeader}>
@@ -277,5 +325,66 @@ const styles = StyleSheet.create({
   tipDescription: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 16,
+  },
+  tipsHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  clearButton: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tipResultCard: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  tipResultHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  tipResultBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  tipResultRank: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  tipResultTitleContainer: {
+    flex: 1,
+  },
+  tipResultTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  tipResultCategory: {
+    fontSize: 13,
+    textTransform: 'capitalize',
+  },
+  tipResultText: {
+    fontSize: 14,
+    lineHeight: 21,
   },
 });
