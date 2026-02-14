@@ -1,29 +1,45 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Plant Social Theme - Nature-inspired colors for plant care
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Plant-inspired color palette
+const tintColorLight = '#2D6A4F'; // Forest green
+const tintColorDark = '#95D5B2'; // Mint green
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: '#1B4332',
+    textSecondary: '#52796F',
+    background: '#F8FAF9',
+    cardBackground: '#FFFFFF',
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#52796F',
+    tabIconDefault: '#84A98C',
     tabIconSelected: tintColorLight,
+    accent: '#40916C',
+    accentLight: '#D8F3DC',
+    border: '#E8F0EB',
+    success: '#40916C',
+    warning: '#E9C46A',
+    danger: '#E76F51',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#D8F3DC',
+    textSecondary: '#95D5B2',
+    background: '#0D1B14',
+    cardBackground: '#1B2E23',
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: '#74C69D',
+    tabIconDefault: '#52796F',
     tabIconSelected: tintColorDark,
+    accent: '#74C69D',
+    accentLight: '#1B4332',
+    border: '#2D3E35',
+    success: '#74C69D',
+    warning: '#E9C46A',
+    danger: '#E76F51',
   },
 };
 

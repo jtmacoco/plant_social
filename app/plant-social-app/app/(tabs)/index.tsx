@@ -1,118 +1,267 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet, Button, Alert } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
 import { useState } from 'react';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
 import PlantCamera from '@/components/PlantCamera';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function HomeScreen() {
   const [showCamera, setShowCamera] = useState(false);
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
 
   if (showCamera) {
     return (
       <PlantCamera
-        onPhotoTaken={(uri) => {
-          Alert.alert('Photo saved!', uri);
+        onPhotoTaken={(uri: string) => {
+          Alert.alert('Photo saved!', 'Your plant photo has been captured.');
           setShowCamera(false);
         }}
+        onClose={() => setShowCamera(false)}
       />
     );
   }
 
   return (
-    <ParallaxScrollView
+    <ScrollView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.contentContainer}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <ThemedText style={styles.greeting}>Hello, Plant Parent! 🌱</ThemedText>
+        <ThemedText style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Let's take care of your green friends
+        </ThemedText>
+      </View>
 
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+      {/* Main Action Card - Camera */}
+      <TouchableOpacity 
+        style={[styles.mainCard, { backgroundColor: colors.accent }]}
+        onPress={() => setShowCamera(true)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.mainCardContent}>
+          <View style={styles.mainCardIcon}>
+            <IconSymbol name="camera.fill" size={32} color="#FFFFFF" />
+          </View>
+          <View style={styles.mainCardText}>
+            <ThemedText style={styles.mainCardTitle}>Get Plant Tips</ThemedText>
+            <ThemedText style={styles.mainCardDescription}>
+              Take a photo to get specific care tips for your plant
+            </ThemedText>
+          </View>
+        </View>
+        <View style={styles.mainCardArrow}>
+          <IconSymbol name="chevron.right" size={24} color="rgba(255,255,255,0.7)" />
+        </View>
+      </TouchableOpacity>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 4: Camera</ThemedText>
-        <Button title="Open Camera" onPress={() => setShowCamera(true)} />
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* Quick Actions */}
+      <View style={styles.sectionHeader}>
+        <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
+      </View>
+      
+      <View style={styles.actionsGrid}>
+        <TouchableOpacity 
+          style={[styles.actionCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.actionIcon, { backgroundColor: colors.accentLight }]}>
+            <IconSymbol name="drop.fill" size={24} color={colors.accent} />
+          </View>
+          <ThemedText style={styles.actionTitle}>Water</ThemedText>
+          <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>Log watering</ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.actionIcon, { backgroundColor: '#FEF3C7' }]}>
+            <IconSymbol name="sun.max.fill" size={24} color="#D97706" />
+          </View>
+          <ThemedText style={styles.actionTitle}>Light</ThemedText>
+          <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>Check exposure</ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.actionIcon, { backgroundColor: '#E0E7FF' }]}>
+            <IconSymbol name="leaf.fill" size={24} color="#4F46E5" />
+          </View>
+          <ThemedText style={styles.actionTitle}>Fertilize</ThemedText>
+          <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>Add nutrients</ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.actionIcon, { backgroundColor: '#FCE7F3' }]}>
+            <IconSymbol name="heart.fill" size={24} color="#DB2777" />
+          </View>
+          <ThemedText style={styles.actionTitle}>Health</ThemedText>
+          <ThemedText style={[styles.actionSubtitle, { color: colors.textSecondary }]}>Check status</ThemedText>
+        </TouchableOpacity>
+      </View>
+
+      {/* Tips Card */}
+      <View style={styles.sectionHeader}>
+        <ThemedText style={styles.sectionTitle}>Today's Tip</ThemedText>
+      </View>
+      
+      <View style={[styles.tipCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+        <View style={styles.tipContent}>
+          <ThemedText style={styles.tipEmoji}>💡</ThemedText>
+          <View style={styles.tipTextContainer}>
+            <ThemedText style={styles.tipTitle}>Watering Tip</ThemedText>
+            <ThemedText style={[styles.tipDescription, { color: colors.textSecondary }]}>
+              Water your plants in the morning to give them time to absorb moisture before the heat of the day.
+            </ThemedText>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  greeting: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+  },
+  mainCard: {
+    borderRadius: 20,
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    marginBottom: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  mainCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  mainCardIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  mainCardText: {
+    flex: 1,
+  },
+  mainCardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  mainCardDescription: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  mainCardArrow: {
+    marginLeft: 8,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 28,
+  },
+  actionCard: {
+    width: '47%',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  actionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  actionSubtitle: {
+    fontSize: 13,
+  },
+  tipCard: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  tipContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  tipEmoji: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  tipTextContainer: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  tipDescription: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
