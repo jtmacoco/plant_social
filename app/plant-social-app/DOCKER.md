@@ -1,16 +1,3 @@
-# Docker Documentation
-
-## What is Docker?
-
-Docker is a containerization platform that packages your entire application along with all its dependencies (Node.js, npm packages, etc.) into a standardized unit called a **container**. This ensures that your app runs the same way regardless of where the container is executed—on your local machine, a colleague's computer, or a production server.
-
-### Benefits of Docker
-
-- **Consistency**: Your app runs identically in development, testing, and production
-- **Isolation**: The container is isolated from the host system, preventing conflicts with other applications
-- **Easy Distribution**: Share a single container image instead of complex setup instructions
-- **Simplified Onboarding**: New developers can get the app running with a single command
-
 ## Docker Setup for Plant Social App
 
 ### What Docker Does for This Project
