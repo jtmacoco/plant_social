@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   plant-social-app:
-    build: .
+    build: 
+      context: .
+      dockerfile: ./app/plant-social-app/Dockerfile
     ports:
       - "8081:8081"   # Metro bundler
       - "19000:19000" # Expo dev tools
