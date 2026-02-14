@@ -181,3 +181,6 @@ fix_*.patch
 .expo
 .expo-shared
 expo-env.d.ts
+
+#gitignore
+app/plant-social-app/.gitignore
