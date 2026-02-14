@@ -1,15 +1,31 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Button, Alert } from 'react-native';
+import { useState } from 'react';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import PlantCamera from '@/components/PlantCamera';
 
 export default function HomeScreen() {
+  const [showCamera, setShowCamera] = useState(false);
+
+  if (showCamera) {
+    return (
+      <PlantCamera
+        onPhotoTaken={(uri) => {
+          Alert.alert('Photo saved!', uri);
+          setShowCamera(false);
+        }}
+      />
+    );
+  }
+
   return (
     <ParallaxScrollView
+
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
         <Image
@@ -73,6 +89,10 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 4: Camera</ThemedText>
+        <Button title="Open Camera" onPress={() => setShowCamera(true)} />
       </ThemedView>
     </ParallaxScrollView>
   );
