@@ -184,3 +184,55 @@ expo-env.d.ts
 
 #gitignore
 app/plant-social-app/.gitignore
+
+
+#FastAPI ignore below
+
+# Python
+__pycache__
+*.pyc
+.mypy_cache
+.pytest_cache
+.venv
+venv
+env
+ENV
+build
+dist
+wheels
+share/python-wheels
+*.egg-info
+
+# OS and Editor files
+.DS_Store
+.vscode
+.idea
+*.swp
+*~
+
+# Environment variables and secrets
+.env
+.flaskenv
+secrets.toml
+
+# Databases (if used locally)
+*.db
+test_db.db
+sqlite.db
+
+# FastAPI Cloud deployment files
+.fastapicloudignore
+
+# Coverage reports
+.coverage
+htmlcov
+
+# Logs and other generated files
+log.txt
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+#OTHER
+*myvenv/

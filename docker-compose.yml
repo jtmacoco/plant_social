@@ -13,3 +13,12 @@ services:
       - REACT_NATIVE_PACKAGER_HOSTNAME=localhost
     stdin_open: true
     tty: true
+  
+  api:
+    build:
+      context: ./service/api
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./service/api/app:/app/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
