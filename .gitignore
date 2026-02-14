@@ -176,3 +176,8 @@ fix_*.patch
 
 # [Experimental] Generated TS type definitions
 /packages/**/types_generated/
+
+# Expo
+.expo
+.expo-shared
+expo-env.d.ts
