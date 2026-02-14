@@ -26,4 +26,5 @@ EXPOSE 8081 19000 19006
 ENV EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
 
 # Start the Expo development server
-CMD ["npm", "start"]
+#CMD ["npm", "start"]
+CMD ["npx", "expo", "start", "--lan"]
