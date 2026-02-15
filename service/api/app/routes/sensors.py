@@ -5,6 +5,9 @@ from datetime import datetime
 
 router = APIRouter(prefix="/sensors", tags=["sensors"])
 
+# In-memory store for the latest sensor readings
+sensor_readings = {}
+
 class MoistureReading(BaseModel):
     sensor_id: str = Field(..., description="Unique ID of the ESP32 or sensor")
     moisture_value: int = Field(..., description="Moisture reading (0-100% or raw analog value)")
@@ -29,9 +32,23 @@ async def receive_moisture_data(reading: MoistureReading):
     elif reading.moisture_value > 80:
         status = "overwatered"
 
+    # Update the in-memory store
+    sensor_readings[reading.sensor_id] = {
+        "id": reading.sensor_id,
+        "moisture": reading.moisture_value,
+        "status": status,
+        "needs_water": needs_water,
+        "updated_at": datetime.now().isoformat()
+    }
+
     return {
         "status": "success",
         "server_time": datetime.now().isoformat(),
         "plant_status": status,
         "command": "WATER_ON" if needs_water else "WATER_OFF"
     }
+
+@router.get("/status")
+async def get_sensors_status():
+    """Returns the latest status of all connected sensors."""
+    return list(sensor_readings.values())

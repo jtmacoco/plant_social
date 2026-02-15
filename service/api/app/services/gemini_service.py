@@ -3,6 +3,7 @@ import os
 import httpx
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+print(f"GEMINI_API_KEY set: {bool(GEMINI_API_KEY)}")  # Debug log to confirm API key presence
 GEMINI_MODEL = "gemini-2.0-flash"
 GEMINI_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}"
@@ -27,6 +28,17 @@ SYSTEM_PROMPT = (
     "still give general care advice based on what you see."
 )
 
+SENSOR_SYSTEM_PROMPT = (
+    "You are an expert botanist. You are analyzing raw analog voltage data from an ESP32 capacitive soil moisture sensor. "
+    "The sensor returns a value between 0 and 4095. "
+    "Typically: High values (~2500-4095) indicate DRY soil. "
+    "Low values (~1000-1800) indicate WET soil. "
+    "Values in between indicate MOIST soil. "
+    "Based on the plant type provided and the voltage value, determine if the plant needs water. "
+    "Respond with a JSON object (no markdown) with keys: "
+    "'needs_water' (boolean), 'status' (string: 'thirsty', 'healthy', 'overwatered'), "
+    "and 'message' (string: short advice)."
+)
 
 async def analyze_plant_image(
     image_bytes: bytes, mime_type: str, user_context: str = ""
@@ -96,3 +108,75 @@ async def analyze_plant_image(
         }
 
     return result
+
+async def analyze_sensor_data(plant_type: str, voltage: int) -> dict:
+    """Send sensor data to Gemini to determine if plant needs water."""
+    
+    prompt = f"Plant Type: {plant_type}\nRaw Voltage Signal: {voltage}"
+    
+    parts = [
+        {"text": SENSOR_SYSTEM_PROMPT},
+        {"text": prompt}
+    ]
+
+    payload = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": 256,
+        },
+    }
+
+    api_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}"
+        f":generateContent?key={api_key}"
+    )
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        
+        # Clean up markdown if present
+        cleaned = text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[1]
+        if cleaned.endswith("```"):
+            cleaned = cleaned.rsplit("```", 1)[0]
+            
+        import json
+        try:
+            return json.loads(cleaned.strip())
+        except json.JSONDecodeError:
+            return {
+                "needs_water": False,
+                "status": "unknown",
+                "message": "Could not analyze sensor data."
+            }
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 429:
+            print(f"Gemini Rate Limit (429). Voltage: {voltage}")
+            # Fallback: High voltage (~2500+) usually means dry for capacitive sensors
+            needs_water = voltage > 2500
+            return {
+                "needs_water": needs_water,
+                "status": "thirsty" if needs_water else "healthy",
+                "message": ""
+            }
+        print(f"Gemini HTTP Error: {e}")
+        return {
+            "needs_water": False,
+            "status": "error",
+            "message": "AI service error."
+        }
+    except Exception as e:
+        print(f"Gemini Error: {e}")
+        return {
+            "needs_water": False,
+            "status": "error",
+            "message": "AI service unavailable."
+        }

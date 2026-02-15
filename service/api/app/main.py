@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware 
-from .routes import images, plant_doctor
+from .routes import images, plant_doctor,sensors,sensor_ai
 import uvicorn
 
 origins = [
@@ -22,6 +22,8 @@ app.add_middleware(
 )
 app.include_router(images.router)
 app.include_router(plant_doctor.router)
+app.include_router(sensors.router)
+app.include_router(sensor_ai.router)
 @app.get("/")
 async def read_root():
     return("Hello World")
