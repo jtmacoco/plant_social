@@ -75,13 +75,26 @@ async def analyze_plant_image(
         f":generateContent?key={api_key}"
     )
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.post(url, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
 
-    # Extract the text content from Gemini's response
-    text = data["candidates"][0]["content"]["parts"][0]["text"]
+        # Extract the text content from Gemini's response
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+    except httpx.HTTPStatusError as e:
+        print(f"Gemini Image Analysis Error: {e}")
+        if e.response.status_code == 429:
+            return {
+                "plant_name": "System Busy (Rate Limit)",
+                "health_status": "needs_attention",
+                "issues": ["AI Service is busy"],
+                "tips": ["Please wait a minute before scanning again."],
+                "summary": "The AI service is currently receiving too many requests. Please try again shortly."
+            }
+        # Re-raise other errors to be handled by the route
+        raise e
 
     # Try to parse the JSON from the response
     import json

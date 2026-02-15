@@ -27,7 +27,7 @@ async function request<T>(url: string, options: RequestInit): Promise<T> {
     })
     const data = await res.json().catch(()=>({}));
     if (!res.ok){
-        throw new Error(data.error||data.message||`HTTP error ${res.status}`)
+        throw new Error(data.detail || data.error || data.message || `HTTP error ${res.status}`)
     }
     return data as T;
 }
