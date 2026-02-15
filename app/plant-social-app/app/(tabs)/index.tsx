@@ -1,5 +1,6 @@
 import { Platform, StyleSheet, TouchableOpacity, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,6 +16,7 @@ export default function HomeScreen() {
   const [tips, setTips] = useState<PlantTip[]>([]);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const router = useRouter();
 
   const handlePhotoTaken = async (uri: string) => {
     setShowCamera(false);
@@ -67,6 +69,28 @@ export default function HomeScreen() {
             <ThemedText style={styles.mainCardTitle}>Get Plant Tips</ThemedText>
             <ThemedText style={styles.mainCardDescription}>
               Take a photo to get specific care tips for your plant
+            </ThemedText>
+          </View>
+        </View>
+        <View style={styles.mainCardArrow}>
+          <IconSymbol name="chevron.right" size={24} color="rgba(255,255,255,0.7)" />
+        </View>
+      </TouchableOpacity>
+
+      {/* Plant Doctor Card - Gemini AI */}
+      <TouchableOpacity 
+        style={[styles.doctorCard, { backgroundColor: '#7C3AED' }]}
+        onPress={() => router.push('/plant-doctor' as any)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.mainCardContent}>
+          <View style={styles.mainCardIcon}>
+            <IconSymbol name="cross.case.fill" size={32} color="#FFFFFF" />
+          </View>
+          <View style={styles.mainCardText}>
+            <ThemedText style={styles.mainCardTitle}>Plant Doctor</ThemedText>
+            <ThemedText style={styles.mainCardDescription}>
+              AI diagnosis & personalized care advice
             </ThemedText>
           </View>
         </View>
@@ -214,6 +238,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   mainCard: {
+    borderRadius: 20,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  doctorCard: {
     borderRadius: 20,
     padding: 20,
     flexDirection: 'row',

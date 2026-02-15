@@ -26,4 +26,5 @@ services:
       - ./service/api/app:/app/app
     environment:
       - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
