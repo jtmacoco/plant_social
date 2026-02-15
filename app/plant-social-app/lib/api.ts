@@ -2,9 +2,17 @@ import { Platform } from 'react-native';
 import httpClient from './http/httpClient';
 import { API_BASE_URL } from './config';
 
-interface UploadImageResponse {
+export interface PlantTip {
   id: string;
+  score: number;
+  title: string;
+  text: string;
+  category: string;
+}
+
+export interface UploadImageResponse {
   content_type: string;
+  tips: PlantTip[];
 }
 
 export async function uploadImage(uri: string): Promise<UploadImageResponse> {

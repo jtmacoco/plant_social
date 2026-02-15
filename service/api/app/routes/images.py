@@ -2,11 +2,14 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from fastapi.responses import FileResponse
 from pathlib import Path
 import uuid
+from ..services.clip_service import embed_image
+from ..services.pinecone_client import query_similar
 
 router = APIRouter(prefix="/images", tags=["images"])
 UPLOAD_DIR = Path("data/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MAX_BYTES = 8 * 1024 * 1024
+
 
 @router.post("")
 async def upload_image(file: UploadFile = File(...), user_id:str | None = Form(None)):
