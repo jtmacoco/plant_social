@@ -126,6 +126,14 @@ export default function PlantDoctorScreen() {
       {/* Diagnosis Results */}
       {diagnosis && !loading && (
         <>
+          {/* Diagnosis Header */}
+          <View style={styles.diagnosisHeader}>
+            <ThemedText style={styles.diagnosisTitle}>🩺 Diagnosis for Your Plant</ThemedText>
+            <ThemedText style={[styles.diagnosisSubtitle, { color: colors.textSecondary }]}>
+              Personalized analysis based on your photo and environment
+            </ThemedText>
+          </View>
+
           {/* Plant Name & Status */}
           <View style={[styles.statusCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <View style={styles.statusHeader}>
@@ -165,9 +173,12 @@ export default function PlantDoctorScreen() {
             </>
           )}
 
-          {/* Tips */}
+          {/* Personalized Care Plan */}
           <View style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>💡 Care Tips</ThemedText>
+            <ThemedText style={styles.sectionTitle}>💡 Personalized Care Plan</ThemedText>
+            <ThemedText style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+              For your specific plant and environment
+            </ThemedText>
           </View>
           {diagnosis.tips.map((tip, index) => (
             <View
@@ -184,6 +195,102 @@ export default function PlantDoctorScreen() {
               </ThemedText>
             </View>
           ))}
+
+          {/* Want to Learn More? */}
+          <View style={[styles.deepDiveSection, { borderColor: colors.border }]}>
+            <ThemedText style={styles.deepDiveTitle}>📚 Want to Learn More?</ThemedText>
+            <ThemedText style={[styles.deepDiveSubtitle, { color: colors.textSecondary }]}>
+              Explore our care library for in-depth guides on these topics:
+            </ThemedText>
+            <View style={styles.deepDiveButtons}>
+              {(diagnosis.issues.some(issue => 
+                issue.toLowerCase().includes('water') || 
+                issue.toLowerCase().includes('moisture') ||
+                issue.toLowerCase().includes('dry') ||
+                issue.toLowerCase().includes('soggy') ||
+                issue.toLowerCase().includes('rot')
+              ) || diagnosis.tips.some(tip => tip.toLowerCase().includes('water'))) && (
+                <TouchableOpacity
+                  style={[styles.deepDiveButton, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                  onPress={() => {
+                    setDiagnosis(null);
+                    router.back();
+                  }}
+                >
+                  <IconSymbol name="drop.fill" size={18} color={colors.accent} />
+                  <ThemedText style={[styles.deepDiveButtonText, { color: colors.accent }]}>Watering Guides</ThemedText>
+                </TouchableOpacity>
+              )}
+
+              {(diagnosis.issues.some(issue =>
+                issue.toLowerCase().includes('light') ||
+                issue.toLowerCase().includes('sun') ||
+                issue.toLowerCase().includes('shade') ||
+                issue.toLowerCase().includes('bright')
+              ) || diagnosis.tips.some(tip => tip.toLowerCase().includes('light') || tip.toLowerCase().includes('sun'))) && (
+                <TouchableOpacity
+                  style={[styles.deepDiveButton, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                  onPress={() => {
+                    setDiagnosis(null);
+                    router.back();
+                  }}
+                >
+                  <IconSymbol name="sun.max.fill" size={18} color={colors.accent} />
+                  <ThemedText style={[styles.deepDiveButtonText, { color: colors.accent }]}>Light Guides</ThemedText>
+                </TouchableOpacity>
+              )}
+
+              {(diagnosis.issues.some(issue =>
+                issue.toLowerCase().includes('pest') ||
+                issue.toLowerCase().includes('bug') ||
+                issue.toLowerCase().includes('insect') ||
+                issue.toLowerCase().includes('mite') ||
+                issue.toLowerCase().includes('disease') ||
+                issue.toLowerCase().includes('fungus')
+              ) || diagnosis.tips.some(tip => tip.toLowerCase().includes('pest') || tip.toLowerCase().includes('spray'))) && (
+                <TouchableOpacity
+                  style={[styles.deepDiveButton, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                  onPress={() => {
+                    setDiagnosis(null);
+                    router.back();
+                  }}
+                >
+                  <IconSymbol name="ladybug.fill" size={18} color={colors.accent} />
+                  <ThemedText style={[styles.deepDiveButtonText, { color: colors.accent }]}>Pest & Disease Guides</ThemedText>
+                </TouchableOpacity>
+              )}
+
+              {(diagnosis.issues.some(issue =>
+                issue.toLowerCase().includes('soil') ||
+                issue.toLowerCase().includes('root') ||
+                issue.toLowerCase().includes('repot') ||
+                issue.toLowerCase().includes('nutrient') ||
+                issue.toLowerCase().includes('fertiliz')
+              ) || diagnosis.tips.some(tip => tip.toLowerCase().includes('soil') || tip.toLowerCase().includes('fertiliz'))) && (
+                <TouchableOpacity
+                  style={[styles.deepDiveButton, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                  onPress={() => {
+                    setDiagnosis(null);
+                    router.back();
+                  }}
+                >
+                  <IconSymbol name="leaf.fill" size={18} color={colors.accent} />
+                  <ThemedText style={[styles.deepDiveButtonText, { color: colors.accent }]}>Soil & Nutrition Guides</ThemedText>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={[styles.deepDiveButtonFull, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                onPress={() => {
+                  setDiagnosis(null);
+                  router.back();
+                }}
+              >
+                <IconSymbol name="book.fill" size={18} color={colors.accent} />
+                <ThemedText style={[styles.deepDiveButtonText, { color: colors.accent }]}>Browse All Care Guides</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           {/* Clear Button */}
           <TouchableOpacity
@@ -245,6 +352,21 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+  },
+  diagnosisHeader: {
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#7C3AED',
+  },
+  diagnosisTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  diagnosisSubtitle: {
+    fontSize: 14,
+    fontStyle: 'italic',
   },
   cameraCard: {
     borderRadius: 20,
@@ -340,6 +462,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    fontStyle: 'italic',
+    marginTop: 4,
   },
   issueCard: {
     flexDirection: 'row',
@@ -444,5 +571,49 @@ const styles = StyleSheet.create({
   contextHint: {
     fontSize: 12,
     marginTop: 8,
+  },
+  deepDiveSection: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 2,
+  },
+  deepDiveTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  deepDiveSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  deepDiveButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  deepDiveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    gap: 8,
+  },
+  deepDiveButtonFull: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    gap: 8,
+    marginTop: 6,
+  },
+  deepDiveButtonText: {
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

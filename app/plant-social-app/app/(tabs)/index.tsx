@@ -55,7 +55,7 @@ export default function HomeScreen() {
         </ThemedText>
       </View>
 
-      {/* Main Action Card - Camera */}
+      {/* Care Library Card - Pinecone/CLIP */}
       <TouchableOpacity 
         style={[styles.mainCard, { backgroundColor: colors.accent }]}
         onPress={() => setShowCamera(true)}
@@ -63,12 +63,12 @@ export default function HomeScreen() {
       >
         <View style={styles.mainCardContent}>
           <View style={styles.mainCardIcon}>
-            <IconSymbol name="camera.fill" size={32} color="#FFFFFF" />
+            <IconSymbol name="book.fill" size={32} color="#FFFFFF" />
           </View>
           <View style={styles.mainCardText}>
-            <ThemedText style={styles.mainCardTitle}>Get Plant Tips</ThemedText>
+            <ThemedText style={styles.mainCardTitle}>Learn Care Basics</ThemedText>
             <ThemedText style={styles.mainCardDescription}>
-              Take a photo to get specific care tips for your plant
+              Snap a photo to get general care guides for watering, light, pests & soil
             </ThemedText>
           </View>
         </View>
@@ -88,9 +88,9 @@ export default function HomeScreen() {
             <IconSymbol name="cross.case.fill" size={32} color="#FFFFFF" />
           </View>
           <View style={styles.mainCardText}>
-            <ThemedText style={styles.mainCardTitle}>Plant Doctor</ThemedText>
+            <ThemedText style={styles.mainCardTitle}>AI Plant Doctor</ThemedText>
             <ThemedText style={styles.mainCardDescription}>
-              AI diagnosis & personalized care advice
+              Upload a photo & describe conditions for a custom diagnosis and care plan
             </ThemedText>
           </View>
         </View>
@@ -114,11 +114,14 @@ export default function HomeScreen() {
         <>
           <View style={styles.sectionHeader}>
             <View style={styles.tipsHeaderRow}>
-              <ThemedText style={styles.sectionTitle}>Care Tips for Your Plant</ThemedText>
+              <ThemedText style={styles.sectionTitle}>📚 General Care Guides</ThemedText>
               <TouchableOpacity onPress={() => setTips([])}>
                 <ThemedText style={[styles.clearButton, { color: colors.accent }]}>Clear</ThemedText>
               </TouchableOpacity>
             </View>
+            <ThemedText style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+              Evergreen advice from our plant care library
+            </ThemedText>
           </View>
           {tips.map((tip, index) => (
             <View
@@ -299,6 +302,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginTop: 4,
   },
   actionsGrid: {
     flexDirection: 'row',
