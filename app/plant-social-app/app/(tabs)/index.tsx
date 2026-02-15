@@ -7,19 +7,33 @@ import PlantCamera from '@/components/PlantCamera';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { uploadImage } from '@/lib/api';
 
 export default function HomeScreen() {
   const [showCamera, setShowCamera] = useState(false);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
+  const handlePhotoTaken = async (uri: string) => {
+    try {
+      const result = await uploadImage(uri);
+      console.log('Upload response:', result);
+      Alert.alert(
+        'Success!', 
+        `Image uploaded!\nID: ${result.id}\nType: ${result.content_type}`
+      );
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert('Error', `Failed to upload image: ${error}`);
+    } finally {
+      setShowCamera(false);
+    }
+  };
+
   if (showCamera) {
     return (
       <PlantCamera
-        onPhotoTaken={(uri: string) => {
-          Alert.alert('Photo saved!', 'Your plant photo has been captured.');
-          setShowCamera(false);
-        }}
+        onPhotoTaken={handlePhotoTaken}
         onClose={() => setShowCamera(false)}
       />
     );

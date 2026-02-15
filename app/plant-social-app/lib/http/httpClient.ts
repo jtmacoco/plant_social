@@ -54,6 +54,17 @@ const httpClient = {
         return request<T>(url, {
             method: 'DELETE',
         });
+    },
+    upload: async function <T>(url: string, formData: FormData): Promise<T> {
+        const res = await fetch(url, {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data.error || data.message || `HTTP error ${res.status}`);
+        }
+        return data as T;
     }
 }
 export default httpClient;
