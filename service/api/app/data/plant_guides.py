@@ -132,4 +132,196 @@ PLANT_GUIDES = [
         "category": "nutrition",
         "text": "Feed plants monthly during spring and summer with balanced liquid fertilizer diluted to half strength. Stop fertilizing in fall and winter when growth slows. Over-fertilizing causes salt buildup and brown leaf edges. Always water before fertilizing.",
     },
+    # Additional Watering Issues
+    {
+        "id": "guide_021",
+        "title": "Root Rot Prevention",
+        "category": "watering",
+        "text": "Root rot occurs when soil stays too wet for too long. Always use pots with drainage holes. Choose well-draining soil mixes. Allow top 1-2 inches to dry between waterings. If root rot develops, trim away black mushy roots with sterile scissors and repot in fresh dry soil.",
+    },
+    {
+        "id": "guide_022",
+        "title": "Bottom Watering Technique",
+        "category": "watering",
+        "text": "Bottom watering prevents overwatering and encourages deep root growth. Place plant pot in a tray of water for 10-20 minutes until top soil feels moist. Drain excess water. This method is ideal for African violets, succulents, and plants prone to fungal issues.",
+    },
+    # Humidity
+    {
+        "id": "guide_023",
+        "title": "Increasing Indoor Humidity",
+        "category": "health",
+        "text": "Many houseplants need 40-60% humidity. Group plants together to create a humid microclimate. Use pebble trays filled with water under pots. Run a humidifier near plants. Mist leaves in morning. Avoid placing plants near heating vents or AC units.",
+    },
+    {
+        "id": "guide_024",
+        "title": "Low Humidity Damage",
+        "category": "health",
+        "text": "Brown crispy leaf edges, leaf drop, and spider mites indicate low humidity. This is common in winter when heating systems dry indoor air. Increase humidity with humidifiers or grouping plants. Avoid misting flowering plants as it can cause bud drop.",
+    },
+    # Temperature
+    {
+        "id": "guide_025",
+        "title": "Temperature Stress",
+        "category": "health",
+        "text": "Most houseplants prefer 65-75°F during day and 60-70°F at night. Sudden temperature changes cause leaf drop. Keep plants away from cold drafts, AC vents, and heating sources. Tropical plants suffer below 50°F. Move plants away from cold windows in winter.",
+    },
+    {
+        "id": "guide_026",
+        "title": "Cold Damage Recovery",
+        "category": "health",
+        "text": "Cold-damaged leaves turn black or translucent. Move plant to warmer location immediately. Don't remove damaged leaves right away - they still photosynthesize. Wait until spring to prune. Reduce watering as cold-damaged roots absorb less water.",
+    },
+    # Additional Pests
+    {
+        "id": "guide_027",
+        "title": "Aphids Control",
+        "category": "pests",
+        "text": "Tiny green, black, or white insects clustering on new growth are aphids. They secrete sticky honeydew. Spray with strong water stream to dislodge. Apply insecticidal soap or neem oil every 5-7 days. Ladybugs are natural predators. Check for ants which farm aphids.",
+    },
+    {
+        "id": "guide_028",
+        "title": "Scale Insects",
+        "category": "pests",
+        "text": "Brown or white bumps on stems and leaf undersides are scale insects. They don't move and look like raised shells. Scrape off with fingernail or dull knife. Wipe stems with rubbing alcohol. Spray with horticultural oil. Monitor closely for several weeks.",
+    },
+    {
+        "id": "guide_029",
+        "title": "Thrips Identification",
+        "category": "pests",
+        "text": "Silver streaks on leaves, black specks of waste, and tiny fast-moving insects indicate thrips. They cause distorted new growth. Isolate plant immediately. Spray with spinosad or insecticidal soap. Use blue sticky traps. Repeat treatment every 3 days for 2 weeks.",
+    },
+    # Diseases
+    {
+        "id": "guide_030",
+        "title": "Powdery Mildew Treatment",
+        "category": "pests",
+        "text": "White powdery coating on leaves is powdery mildew fungus. Improve air circulation around plant. Reduce humidity. Remove affected leaves. Spray with mixture of 1 tbsp baking soda and 1 tsp dish soap per gallon of water. Treat weekly until resolved.",
+    },
+    {
+        "id": "guide_031",
+        "title": "Bacterial Leaf Spot",
+        "category": "pests",
+        "text": "Water-soaked spots with yellow halos indicate bacterial infection. Remove affected leaves immediately. Avoid overhead watering. Improve air circulation. Water in morning so leaves dry quickly. Disinfect tools between cuts. Bacterial issues spread quickly in high humidity.",
+    },
+    {
+        "id": "guide_032",
+        "title": "Fungal Disease Prevention",
+        "category": "pests",
+        "text": "Prevent fungal diseases by watering at soil level, not on leaves. Ensure good air circulation - don't overcrowd plants. Remove dead leaves promptly. Avoid overwatering. Use sterile potting mix. Disinfect pots before reusing. Isolate sick plants immediately.",
+    },
+    # Specific Symptoms
+    {
+        "id": "guide_033",
+        "title": "Yellowing Lower Leaves",
+        "category": "health",
+        "text": "A few yellow lower leaves is natural aging - remove them. Many yellow leaves indicate overwatering or nitrogen deficiency. If soil is soggy, reduce watering. If soil is dry, fertilize with balanced fertilizer. Yellow leaves with green veins suggest iron deficiency.",
+    },
+    {
+        "id": "guide_034",
+        "title": "Leaf Curling",
+        "category": "health",
+        "text": "Upward curling leaves indicate underwatering or heat stress. Downward curling suggests overwatering or cold damage. Inward curling with distorted growth indicates pest damage. Check soil moisture, temperature, and inspect for pests before adjusting care.",
+    },
+    {
+        "id": "guide_035",
+        "title": "Sudden Leaf Drop",
+        "category": "health",
+        "text": "Sudden leaf drop indicates shock from temperature change, drafts, overwatering, or being moved. Ficus trees are especially sensitive. Maintain consistent environment. Don't repot or fertilize until plant recovers. Some leaf drop is normal when adapting to new location.",
+    },
+    {
+        "id": "guide_036",
+        "title": "Drooping Leaves",
+        "category": "health",
+        "text": "Drooping can mean underwatering, overwatering, or root issues. Check soil moisture first. If dry, water thoroughly. If wet, check for root rot. Drooping at same time daily may indicate need for more water. Persistent drooping despite watering suggests root damage.",
+    },
+    # Seasonal Care
+    {
+        "id": "guide_037",
+        "title": "Winter Plant Care",
+        "category": "plant_type",
+        "text": "In winter, reduce watering frequency as plants grow slower. Stop fertilizing from October to March. Move plants away from cold windows. Increase humidity to combat dry indoor air. Provide supplemental grow lights as daylight decreases. Avoid repotting.",
+    },
+    {
+        "id": "guide_038",
+        "title": "Spring Growth Transition",
+        "category": "plant_type",
+        "text": "As days lengthen in spring, resume regular fertilizing schedule. This is ideal time for repotting and propagation. Gradually increase watering as plants enter active growth. Move plants back to brighter locations. Prune dead or damaged growth.",
+    },
+    # Propagation
+    {
+        "id": "guide_039",
+        "title": "Stem Cutting Propagation",
+        "category": "plant_type",
+        "text": "Take 4-6 inch cuttings just below a leaf node. Remove lower leaves. Place in water or moist perlite. Keep in bright indirect light. Change water weekly. Roots appear in 2-6 weeks. Transplant when roots are 2 inches long. Works for pothos, philodendron, monsteras.",
+    },
+    {
+        "id": "guide_040",
+        "title": "Leaf Propagation for Succulents",
+        "category": "plant_type",
+        "text": "Gently twist healthy leaves from succulent stem. Let callus over for 2-3 days. Place on dry cactus soil - don't bury. Mist lightly every few days. Roots appear first, then baby plant. Wait until mother leaf shrivels before watering normally.",
+    },
+    # Air and Water Quality
+    {
+        "id": "guide_041",
+        "title": "Air Circulation Importance",
+        "category": "health",
+        "text": "Good air circulation prevents fungal diseases and pest infestations. Don't overcrowd plants. Use a small fan on low setting to keep air moving. Open windows when weather permits. Avoid stagnant air but protect from strong drafts. Proper airflow strengthens stems.",
+    },
+    {
+        "id": "guide_042",
+        "title": "Tap Water Issues",
+        "category": "watering",
+        "text": "Chlorine, fluoride, and salts in tap water cause brown tips in sensitive plants like dracaena and spider plants. Let tap water sit 24 hours before using to allow chlorine to evaporate. Use filtered, distilled, or rainwater for sensitive species. Flush soil monthly.",
+    },
+    # More Specific Plant Types
+    {
+        "id": "guide_043",
+        "title": "Fern Care Requirements",
+        "category": "plant_type",
+        "text": "Ferns need consistently moist soil - never let dry out completely. Require high humidity (60-80%) and indirect light. Mist daily or use humidity tray. Keep away from heat sources. Feed monthly with diluted fertilizer. Brown crispy fronds indicate low humidity or underwatering.",
+    },
+    {
+        "id": "guide_044",
+        "title": "Cactus Care Guidelines",
+        "category": "plant_type",
+        "text": "Cacti need very infrequent watering - every 2-4 weeks in summer, monthly or less in winter. Require maximum light and warm temperatures. Use fast-draining cactus soil. Don't water if soil is still moist. Shriveling indicates underwatering. Soft spots indicate overwatering.",
+    },
+    {
+        "id": "guide_045",
+        "title": "Prayer Plant Care",
+        "category": "plant_type",
+        "text": "Prayer plants (Maranta, Calathea, Stromanthe) need high humidity, consistent moisture, and filtered light. Never let soil dry completely. Use distilled water as they're sensitive to chemicals. Leaves curl and brown in low humidity. Leaf patterns fade in too much light.",
+    },
+    # Fertilizer Specifics
+    {
+        "id": "guide_046",
+        "title": "Nitrogen Deficiency Signs",
+        "category": "nutrition",
+        "text": "Overall yellow leaves, especially older lower leaves, indicate nitrogen deficiency. Plant growth slows noticeably. Apply balanced fertilizer (20-20-20) or fertilizer higher in nitrogen. Feed every 2 weeks until green color returns. Nitrogen promotes leaf growth.",
+    },
+    {
+        "id": "guide_047",
+        "title": "Fertilizer Burn Recovery",
+        "category": "nutrition",
+        "text": "Brown crispy leaf tips and edges, white crust on soil surface, or wilting indicate fertilizer burn from over-fertilizing. Flush soil thoroughly with plain water - run water through pot for several minutes. Remove affected leaves. Don't fertilize for 6-8 weeks. Resume at quarter strength.",
+    },
+    # Light Issues
+    {
+        "id": "guide_048",
+        "title": "Variegated Plant Light Needs",
+        "category": "light",
+        "text": "Variegated plants (white or yellow patterns) need more light than solid green varieties because they have less chlorophyll. Insufficient light causes reversion to all-green leaves. Provide bright indirect light. Prune any all-green leaves that appear to maintain variegation.",
+    },
+    {
+        "id": "guide_049",
+        "title": "Grow Light Guidelines",
+        "category": "light",
+        "text": "Full-spectrum LED grow lights provide 6500K color temperature. Place 6-12 inches above foliage. Run 12-16 hours daily for most plants. Timer ensures consistency. Grow lights prevent leggy growth in low-light homes. Essential for windowless rooms and dark winter months.",
+    },
+    {
+        "id": "guide_050",
+        "title": "Light Acclimation Process",
+        "category": "light",
+        "text": "Always acclimate plants gradually when moving to brighter location. Start with 1-2 hours of new light conditions, increasing daily over 1-2 weeks. Sudden bright light causes sunburn. New growth adapts to light levels, so change light gradually. Monitor for bleaching or scorching.",
+    },
 ]

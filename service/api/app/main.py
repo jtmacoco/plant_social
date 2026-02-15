@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware 
-from .routes import images
+from .routes import images, plant_doctor
 import uvicorn
 
 origins = [
@@ -21,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(images.router)
+app.include_router(plant_doctor.router)
 @app.get("/")
 async def read_root():
     return("Hello World")
