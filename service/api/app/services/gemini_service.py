@@ -3,7 +3,6 @@ import os
 import httpx
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-print(f"GEMINI_API_KEY set: {bool(GEMINI_API_KEY)}")  # Debug log to confirm API key presence
 GEMINI_MODEL = "gemini-2.0-flash"
 GEMINI_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}"

@@ -1,5 +1,5 @@
 import { StyleSheet, FlatList, Platform, View, TouchableOpacity, Alert, TextInput } from 'react-native';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import * as Notifications from 'expo-notifications';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -27,28 +27,51 @@ type PlantItem = {
   message?: string;
 };
 
-interface SensorPlant {
+type SensorPlant = {
   id: string;
   moisture: number;
   status: string;
   needs_water: boolean;
   updated_at: string;
+};
+
+type AiAnalysis = {
+  needs_water: boolean;
+  status?: string;
+  message?: string;
+};
+
+// Timing constants
+const POLL_MS = 30 * 60 * 1000; // 30 minutes
+const AI_COOLDOWN_MS = POLL_MS; // at most one AI call per sensor per poll window
+const OFFLINE_GRACE_MS = POLL_MS + 60 * 1000; // allow a little grace beyond polling interval
+
+function getApiUrl() {
+  return process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
 }
 
 export default function WaterNotifierScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+
   const [plants, setPlants] = useState<PlantItem[]>([]);
   const [sensorData, setSensorData] = useState<SensorPlant[]>([]);
   const [plantTypes, setPlantTypes] = useState<Record<string, string>>({});
-  const [aiResults, setAiResults] = useState<Record<string, any>>({});
+  const [aiResults, setAiResults] = useState<Record<string, AiAnalysis>>({});
   const [newPlantName, setNewPlantName] = useState('');
   const [newPlantLocation, setNewPlantLocation] = useState('');
+
+  // Mutable refs used inside polling/async loops (avoid stale closures)
   const notificationSentRef = useRef<Set<string>>(new Set());
   const plantTypesRef = useRef<Record<string, string>>({});
-  const lastSensorTimestamps = useRef<Record<string, { iso: string, local: number }>>({});
-  const aiResultsRef = useRef<Record<string, any>>({});
+  const aiResultsRef = useRef<Record<string, AiAnalysis>>({});
+  const lastSensorTimestamps = useRef<Record<string, { iso: string; local: number }>>({});
+
+  // Rate limiting / concurrency guards
   const lastAiCall = useRef<Record<string, number>>({});
+  const aiInFlight = useRef<Set<string>>(new Set());
+  const pollInFlight = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     plantTypesRef.current = plantTypes;
@@ -58,89 +81,7 @@ export default function WaterNotifierScreen() {
     aiResultsRef.current = aiResults;
   }, [aiResults]);
 
-  useEffect(() => {
-    registerForPushNotificationsAsync();
-
-    // Poll for sensor data
-    const interval = setInterval(fetchSensorStatus, 5000);
-    fetchSensorStatus(); // Initial fetch
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchSensorStatus = async () => {
-    try {
-      // Use localhost for simulator/emulator if env var not set
-      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
-      const response = await fetch(`${API_URL}/sensors/status`);
-      if (response.ok) {
-        const data: SensorPlant[] = await response.json();
-        const now = Date.now();
-        data.forEach(s => {
-            const last = lastSensorTimestamps.current[s.id];
-            if (!last || last.iso !== s.updated_at) {
-                lastSensorTimestamps.current[s.id] = { iso: s.updated_at, local: now };
-            }
-        });
-        setSensorData(data);
-        checkAndNotify(data);
-      }
-    } catch (error) {
-      console.log('Error fetching sensor status:', error);
-    }
-  };
-
-  const checkAndNotify = async (data: SensorPlant[]) => {
-    const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
-    const currentPlantTypes = plantTypesRef.current;
-    const currentAiResults = aiResultsRef.current;
-    const now = Date.now();
-
-    for (const plant of data) {
-      // If we have a plant type set for this sensor, check with AI
-      if (currentPlantTypes[plant.id]) {
-        const lastCall = lastAiCall.current[plant.id] || 0;
-        if (now - lastCall < 1800000 && currentAiResults[plant.id]) {
-          continue;
-        }
-
-        try {
-          const res = await fetch(`${API_URL}/sensor-ai/analyze`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ plant_type: currentPlantTypes[plant.id], voltage: plant.moisture })
-          });
-          const aiData = await res.json();
-          lastAiCall.current[plant.id] = Date.now();
-          console.log(`[AI Decision] Sensor: ${plant.id}, Type: ${currentPlantTypes[plant.id]}, Voltage: ${plant.moisture}, Needs Water: ${aiData.needs_water}`);
-          setAiResults(prev => ({...prev, [plant.id]: aiData}));
-
-          if (aiData.needs_water && !notificationSentRef.current.has(plant.id)) {
-            await schedulePushNotification(currentPlantTypes[plant.id], aiData.message);
-            notificationSentRef.current.add(plant.id);
-          } else if (!aiData.needs_water) {
-            notificationSentRef.current.delete(plant.id);
-          }
-        } catch (e) {
-          console.log("AI Analysis failed", e);
-          // Fallback if AI fails but sensor says thirsty
-          if (plant.needs_water && !notificationSentRef.current.has(plant.id)) {
-            await schedulePushNotification(currentPlantTypes[plant.id]);
-            notificationSentRef.current.add(plant.id);
-          }
-        }
-      } else if (plant.needs_water && !notificationSentRef.current.has(plant.id)) {
-        // Fallback to basic logic if no plant type set
-        await schedulePushNotification(`Sensor ${plant.id}`);
-        notificationSentRef.current.add(plant.id);
-      } else if (!plant.needs_water) {
-        // Reset notification flag if plant is watered
-        notificationSentRef.current.delete(plant.id);
-      }
-    }
-  };
-
-  const handleAddPlant = () => {
+  const handleAddPlant = useCallback(() => {
     if (!newPlantName.trim()) {
       Alert.alert('Missing Information', 'Please enter a plant name.');
       return;
@@ -150,35 +91,167 @@ export default function WaterNotifierScreen() {
       id: Date.now().toString(),
       name: newPlantName.trim(),
       location: newPlantLocation.trim() || 'Home',
-      daysLeft: 7, // Default to 7 days
+      daysLeft: 7,
     };
 
     setPlants(prev => [...prev, newPlant]);
     setNewPlantName('');
     setNewPlantLocation('');
-  };
+  }, [newPlantName, newPlantLocation]);
+
+  const checkAndNotify = useCallback(async (data: SensorPlant[]) => {
+    const API_URL = getApiUrl();
+    const currentPlantTypes = plantTypesRef.current;
+    const now = Date.now();
+
+    for (const plant of data) {
+      const label = currentPlantTypes[plant.id] || `Sensor ${plant.id}`;
+
+      // If we have a plant type set for this sensor, consult AI (rate-limited + in-flight guarded)
+      if (currentPlantTypes[plant.id]) {
+        const last = lastAiCall.current[plant.id] || 0;
+
+        // Hard gate: if in-flight OR within cooldown, skip.
+        if (aiInFlight.current.has(plant.id) || now - last < AI_COOLDOWN_MS) {
+          continue;
+        }
+
+        // Mark as started BEFORE awaiting, so overlapping callers can't slip through.
+        aiInFlight.current.add(plant.id);
+        lastAiCall.current[plant.id] = now;
+
+        try {
+          const res = await fetch(`${API_URL}/sensor-ai/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              plant_type: currentPlantTypes[plant.id],
+              voltage: plant.moisture,
+            }),
+          });
+
+          const aiData: AiAnalysis = await res.json();
+
+          console.log(
+            `[AI Decision] Sensor: ${plant.id}, Type: ${currentPlantTypes[plant.id]}, Voltage: ${plant.moisture}, Needs Water: ${aiData.needs_water}`
+          );
+
+          setAiResults(prev => ({ ...prev, [plant.id]: aiData }));
+
+          if (aiData.needs_water && !notificationSentRef.current.has(plant.id)) {
+            await schedulePushNotification(label, aiData.message);
+            notificationSentRef.current.add(plant.id);
+          } else if (!aiData.needs_water) {
+            notificationSentRef.current.delete(plant.id);
+          }
+        } catch (e) {
+          console.log('AI Analysis failed', e);
+
+          // Fallback: if AI fails but sensor says thirsty
+          if (plant.needs_water && !notificationSentRef.current.has(plant.id)) {
+            await schedulePushNotification(label);
+            notificationSentRef.current.add(plant.id);
+          }
+        } finally {
+          aiInFlight.current.delete(plant.id);
+        }
+
+        continue;
+      }
+
+      // Basic logic if no plant type set
+      if (plant.needs_water && !notificationSentRef.current.has(plant.id)) {
+        await schedulePushNotification(label);
+        notificationSentRef.current.add(plant.id);
+      } else if (!plant.needs_water) {
+        notificationSentRef.current.delete(plant.id);
+      }
+    }
+  }, []);
+
+  const fetchSensorStatus = useCallback(async (skipAi = false) => {
+    if (pollInFlight.current) return;
+
+    pollInFlight.current = true;
+    try {
+      const API_URL = getApiUrl();
+      const response = await fetch(`${API_URL}/sensors/status`);
+
+      if (!response.ok) return;
+
+      const data: SensorPlant[] = await response.json();
+      const now = Date.now();
+
+      // Track "last seen" per sensor to detect offline sensors
+      data.forEach(s => {
+        const last = lastSensorTimestamps.current[s.id];
+        if (!last || last.iso !== s.updated_at) {
+          lastSensorTimestamps.current[s.id] = { iso: s.updated_at, local: now };
+        }
+      });
+
+      setSensorData(data);
+
+      if (!skipAi) {
+        // Await so we don't start overlapping AI waves
+        await checkAndNotify(data);
+      }
+    } catch (error) {
+      console.log('Error fetching sensor status:', error);
+    } finally {
+      pollInFlight.current = false;
+    }
+  }, [checkAndNotify]);
+
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+
+    // Defensive: Fast Refresh can sometimes duplicate intervals.
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Initial fetch right away (skip AI to avoid burst on reload)
+    fetchSensorStatus(true);
+
+    intervalRef.current = setInterval(() => {
+      void fetchSensorStatus(false);
+    }, POLL_MS);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [fetchSensorStatus]);
 
   // Merge static and sensor data for display
-  const combinedData = [
-    ...sensorData.map(s => {
+  const combinedData: PlantItem[] = useMemo(() => {
+    const sensorItems: PlantItem[] = sensorData.map(s => {
       const aiResult = aiResults[s.id];
       const lastSeen = lastSensorTimestamps.current[s.id];
-      const isConnected = lastSeen ? (Date.now() - lastSeen.local < 30000) : false;
+      const isConnected = lastSeen ? Date.now() - lastSeen.local < OFFLINE_GRACE_MS : false;
+
+      const needsWater = aiResult ? aiResult.needs_water : s.needs_water;
 
       return {
-      id: s.id,
-      name: plantTypes[s.id] || `Sensor: ${s.id}`,
-      location: 'Connected Device',
-      daysLeft: (aiResult ? aiResult.needs_water : s.needs_water) ? 0 : 3,
-      isSensor: true,
-      status: aiResult ? aiResult.status : s.status,
-      message: aiResult?.message,
-      isConnected,
-      moisture: s.moisture,
-    };
-    }),
-    ...plants
-  ];
+        id: s.id,
+        name: plantTypes[s.id] || `Sensor: ${s.id}`,
+        location: 'Connected Device',
+        daysLeft: needsWater ? 0 : 3,
+        isSensor: true,
+        status: aiResult ? aiResult.status : s.status,
+        message: aiResult?.message,
+        isConnected,
+        moisture: s.moisture,
+      };
+    });
+
+    return [...sensorItems, ...plants];
+  }, [aiResults, plants, plantTypes, sensorData]);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
@@ -187,23 +260,29 @@ export default function WaterNotifierScreen() {
           Keep your plants hydrated 💧
         </ThemedText>
       </View>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
-          style={[styles.input, { backgroundColor: colors.cardBackground, borderColor: colors.border, color: colors.text }]}
+          style={[
+            styles.input,
+            { backgroundColor: colors.cardBackground, borderColor: colors.border, color: colors.text },
+          ]}
           placeholder="Plant Type (e.g. Fern)"
           placeholderTextColor={colors.textSecondary}
           value={newPlantName}
           onChangeText={setNewPlantName}
         />
         <TextInput
-          style={[styles.input, { backgroundColor: colors.cardBackground, borderColor: colors.border, color: colors.text }]}
+          style={[
+            styles.input,
+            { backgroundColor: colors.cardBackground, borderColor: colors.border, color: colors.text },
+          ]}
           placeholder="Location (Optional)"
           placeholderTextColor={colors.textSecondary}
           value={newPlantLocation}
           onChangeText={setNewPlantLocation}
         />
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.accent }]}
           onPress={handleAddPlant}
           activeOpacity={0.8}
@@ -214,53 +293,71 @@ export default function WaterNotifierScreen() {
 
       <FlatList
         data={combinedData}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
             activeOpacity={0.7}
           >
-            <View style={[styles.cardIcon, { backgroundColor: (item.isSensor && !item.isConnected) ? '#F3F4F6' : (item.daysLeft === 0 ? '#DBEAFE' : '#F3F4F6') }]}>
-               <IconSymbol 
-                 name="drop.fill" 
-                 size={24} 
-                 color={(item.isSensor && !item.isConnected) ? '#FF0000' : (item.daysLeft === 0 ? '#2563EB' : '#9CA3AF')} 
-               />
+            <View
+              style={[
+                styles.cardIcon,
+                {
+                  backgroundColor:
+                    item.isSensor && !item.isConnected ? '#F3F4F6' : item.daysLeft === 0 ? '#DBEAFE' : '#F3F4F6',
+                },
+              ]}
+            >
+              <IconSymbol
+                name="drop.fill"
+                size={24}
+                color={item.isSensor && !item.isConnected ? '#FF0000' : item.daysLeft === 0 ? '#2563EB' : '#9CA3AF'}
+              />
             </View>
             <View style={styles.cardContent}>
               {item.isSensor && !plantTypes[item.id] ? (
-                <TextInput 
+                <TextInput
                   style={styles.inlineInput}
                   placeholder="Name this plant..."
                   placeholderTextColor={colors.textSecondary}
-                  onSubmitEditing={(e) => setPlantTypes(prev => ({...prev, [item.id]: e.nativeEvent.text}))}
+                  onSubmitEditing={e => setPlantTypes(prev => ({ ...prev, [item.id]: e.nativeEvent.text }))}
                 />
               ) : (
                 <ThemedText style={styles.plantName}>{item.name}</ThemedText>
               )}
               <ThemedText style={[styles.plantLocation, { color: colors.textSecondary }]}>{item.location}</ThemedText>
               {item.isSensor && (
-                <ThemedText style={{fontSize: 12, color: colors.textSecondary}}>Signal: {item.moisture}</ThemedText>
+                <ThemedText style={{ fontSize: 12, color: colors.textSecondary }}>Signal: {item.moisture}</ThemedText>
               )}
               {item.isSensor && !item.isConnected && (
-                <ThemedText style={{fontSize: 12, color: '#EF4444', fontWeight: '600', marginTop: 4}}>
+                <ThemedText style={{ fontSize: 12, color: '#EF4444', fontWeight: '600', marginTop: 4 }}>
                   ⚠️ Connection Lost
                 </ThemedText>
               )}
-              {item.isSensor && item.message && <ThemedText style={{fontSize: 12, color: colors.textSecondary, marginTop: 4}}>{item.message}</ThemedText>}
+              {item.isSensor && item.message && (
+                <ThemedText style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>{item.message}</ThemedText>
+              )}
             </View>
             <View style={styles.statusContainer}>
               {item.isSensor ? (
-                 !item.isConnected ? (
+                !item.isConnected ? (
                   <View style={[styles.badge, { backgroundColor: '#9CA3AF' }]}>
                     <ThemedText style={styles.badgeText}>OFFLINE</ThemedText>
                   </View>
-                 ) : (
-                 <View style={[styles.badge, { backgroundColor: item.daysLeft === 0 ? colors.accent : item.status === 'overwatered' ? '#EF4444' : '#10B981' }]}>
-                  <ThemedText style={styles.badgeText}>{item.status?.toUpperCase()}</ThemedText>
-                </View>
-                 )
+                ) : (
+                  <View
+                    style={[
+                      styles.badge,
+                      {
+                        backgroundColor:
+                          item.daysLeft === 0 ? colors.accent : item.status === 'overwatered' ? '#EF4444' : '#10B981',
+                      },
+                    ]}
+                  >
+                    <ThemedText style={styles.badgeText}>{item.status?.toUpperCase()}</ThemedText>
+                  </View>
+                )
               ) : item.daysLeft === 0 ? (
                 <View style={[styles.badge, { backgroundColor: colors.accent }]}>
                   <ThemedText style={styles.badgeText}>Water Now</ThemedText>
@@ -279,7 +376,7 @@ export default function WaterNotifierScreen() {
 async function schedulePushNotification(plantName: string, message?: string) {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Plant Thirsty! 🌿",
+      title: 'Plant Thirsty! 🌿',
       body: message || `Your ${plantName} needs water immediately!`,
       data: { plantName },
     },
@@ -303,9 +400,9 @@ async function registerForPushNotificationsAsync() {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
+
   if (finalStatus !== 'granted') {
-    console.log('Failed to get push token for push notification!');
-    return;
+    console.log('Failed to get permissions for notifications.');
   }
 }
 
